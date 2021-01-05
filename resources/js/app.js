@@ -19,7 +19,7 @@ const app = new Vue({
             updatedUsers : [],
             users : [],
             gender : '',
-            user_name : '',
+            userName : '',
             selectedCity: '',
             infoWindowOptions: {
                 pixelOffset: {
@@ -78,7 +78,38 @@ const app = new Vue({
         handleInfoWindowClose() {
             this.activeUser = {};
             this.infoWindowOpened = false;
-        },        
+        },
+        validateGenderOrUserName(){
+            if (this.gender == '' || this.userName == ''){ 
+                this.updatedUsers = this.users;
+            }
+        },
+        filterByGender(){
+            if(this.gender != ''){                
+                this.updatedUsers = this.users.filter(user => user.gender == this.gender); 
+            }
+        },
+        filterByUserName(){
+            if(this.userName != ''){
+                this.updatedUsers = this.users.filter( user => (!user.first_name.indexOf(this.userName)) || (!user.last_name.indexOf(this.userName)) );
+            }
+        },
+        filterByCityCenter(){
+            if (this.selectedCity != '') {
+                let filterdUsers = [];
+                let CenterOfCircle = new google.maps.LatLng(parseFloat(this.selectedCity[0].lat), parseFloat(this.selectedCity[0].lon));
+                let radiusOfCircle=  this.radiusOfCircle;
+                $.each(this.updatedUsers, function(key, user) {
+                    let latLng = new google.maps.LatLng(user.lat, user.lon);
+                    let dist  = google.maps.geometry.spherical.computeDistanceBetween(CenterOfCircle,latLng);   
+                   
+                    if (dist <= radiusOfCircle){
+                            filterdUsers.push(user);
+                    } 
+                });
+                this.updatedUsers = filterdUsers;
+            }
+        }
     },
     computed: {
         genderCount() {
@@ -113,42 +144,14 @@ const app = new Vue({
         },
         filteredUsersData: function () {
             
-            if (this.gender == '' || this.user_name == ''){ 
-                this.updatedUsers = this.users; 
-            }
-
-            if(this.gender != ''){
-                
-                this.updatedUsers = this.users.filter(user => user.gender == this.gender); 
-            }
-
-            if(this.user_name != ''){
-                this.updatedUsers = this.users.filter( user => (!user.first_name.indexOf(this.user_name)) || (!user.last_name.indexOf(this.user_name)) );
-            }
-
             
-            if (this.selectedCity != '') {
-                var filterdUsers = [];
-                var allUsers = this.updatedUsers;
-                var CenterOfCircle = new google.maps.LatLng(parseFloat(this.selectedCity[0].lat), parseFloat(this.selectedCity[0].lon));
-
-                for (var i = 0; i < allUsers.length; i++) {
-                    var coords = allUsers[i];
-                    
-                    var latLng = new google.maps.LatLng(coords.lat, coords.lon);
-                    
-                    //Get distance between the center of the circle and the coordinates
-                    var dist  = google.maps.geometry.spherical.computeDistanceBetween(CenterOfCircle,latLng);    
-                    
-                      //If distance is less than the radius, plot the markers in the map
-                    if (dist <= this.radiusOfCircle){
-                            filterdUsers.push(coords);
-                        }
-                      
-                    }
-                    this.updatedUsers = filterdUsers;
-            }
-
+            this.validateGenderOrUserName(); 
+            
+            this.filterByGender();
+            
+            this.filterByUserName();
+            
+            this.filterByCityCenter();
             
             return this.updatedUsers;
         }

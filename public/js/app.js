@@ -53222,7 +53222,7 @@ var app = new Vue({
       updatedUsers: [],
       users: [],
       gender: '',
-      user_name: '',
+      userName: '',
       selectedCity: '',
       infoWindowOptions: {
         pixelOffset: {
@@ -53278,6 +53278,45 @@ var app = new Vue({
     handleInfoWindowClose: function handleInfoWindowClose() {
       this.activeUser = {};
       this.infoWindowOpened = false;
+    },
+    validateGenderOrUserName: function validateGenderOrUserName() {
+      if (this.gender == '' || this.userName == '') {
+        this.updatedUsers = this.users;
+      }
+    },
+    filterByGender: function filterByGender() {
+      var _this2 = this;
+
+      if (this.gender != '') {
+        this.updatedUsers = this.users.filter(function (user) {
+          return user.gender == _this2.gender;
+        });
+      }
+    },
+    filterByUserName: function filterByUserName() {
+      var _this3 = this;
+
+      if (this.userName != '') {
+        this.updatedUsers = this.users.filter(function (user) {
+          return !user.first_name.indexOf(_this3.userName) || !user.last_name.indexOf(_this3.userName);
+        });
+      }
+    },
+    filterByCityCenter: function filterByCityCenter() {
+      if (this.selectedCity != '') {
+        var filterdUsers = [];
+        var CenterOfCircle = new google.maps.LatLng(parseFloat(this.selectedCity[0].lat), parseFloat(this.selectedCity[0].lon));
+        var radiusOfCircle = this.radiusOfCircle;
+        $.each(this.updatedUsers, function (key, user) {
+          var latLng = new google.maps.LatLng(user.lat, user.lon);
+          var dist = google.maps.geometry.spherical.computeDistanceBetween(CenterOfCircle, latLng);
+
+          if (dist <= radiusOfCircle) {
+            filterdUsers.push(user);
+          }
+        });
+        this.updatedUsers = filterdUsers;
+      }
     }
   },
   computed: {
@@ -53294,7 +53333,7 @@ var app = new Vue({
       };
     },
     mapCenter: function mapCenter() {
-      var _this2 = this;
+      var _this4 = this;
 
       if (this.selectedCity == '') {
         return {
@@ -53304,7 +53343,7 @@ var app = new Vue({
       }
 
       this.selectedCity = this.centerCities.filter(function (city) {
-        return city.name == _this2.selectedCity;
+        return city.name == _this4.selectedCity;
       });
       return {
         lat: parseFloat(this.selectedCity[0].lat),
@@ -53318,43 +53357,10 @@ var app = new Vue({
       };
     },
     filteredUsersData: function filteredUsersData() {
-      var _this3 = this;
-
-      if (this.gender == '' || this.user_name == '') {
-        this.updatedUsers = this.users;
-      }
-
-      if (this.gender != '') {
-        this.updatedUsers = this.users.filter(function (user) {
-          return user.gender == _this3.gender;
-        });
-      }
-
-      if (this.user_name != '') {
-        this.updatedUsers = this.users.filter(function (user) {
-          return !user.first_name.indexOf(_this3.user_name) || !user.last_name.indexOf(_this3.user_name);
-        });
-      }
-
-      if (this.selectedCity != '') {
-        var filterdUsers = [];
-        var allUsers = this.updatedUsers;
-        var CenterOfCircle = new google.maps.LatLng(parseFloat(this.selectedCity[0].lat), parseFloat(this.selectedCity[0].lon));
-
-        for (var i = 0; i < allUsers.length; i++) {
-          var coords = allUsers[i];
-          var latLng = new google.maps.LatLng(coords.lat, coords.lon); //Get distance between the center of the circle and the coordinates
-
-          var dist = google.maps.geometry.spherical.computeDistanceBetween(CenterOfCircle, latLng); //If distance is less than the radius, plot the markers in the map
-
-          if (dist <= this.radiusOfCircle) {
-            filterdUsers.push(coords);
-          }
-        }
-
-        this.updatedUsers = filterdUsers;
-      }
-
+      this.validateGenderOrUserName();
+      this.filterByGender();
+      this.filterByUserName();
+      this.filterByCityCenter();
       return this.updatedUsers;
     }
   }

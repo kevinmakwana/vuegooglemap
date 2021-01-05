@@ -39,7 +39,7 @@
                                 <option value="Female">Female</option>
                             </select>
         
-                            <input type="text" v-model="user_name" placeholder="Filter By Name"/>
+                            <input type="text" v-model="userName" placeholder="Filter By Name"/>
         
                             <select v-model="selectedCity">
                                 <option value="">Select center city</option>
@@ -49,7 +49,7 @@
                             </select>
         
                             <h2> Total Male : @{{ genderCount.maleUsersCount }}  </h2>
-                            <h2>Total Female :  @{{ genderCount.femaleUsersCount }} </h2>
+                            <h2> Total Female :  @{{ genderCount.femaleUsersCount }} </h2>
                         </div>
                     </div>
                     
@@ -63,7 +63,7 @@
                     <gmap-circle
                         :center="mapCenter"
                         :radius="2000000"
-                        :visible="true"
+                        :visible="false"
                         :options="{fillColor:'red',fillOpacity:0.2}"
                     ></gmap-circle>
 
